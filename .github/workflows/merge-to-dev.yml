@@ -1,0 +1,34 @@
+name: Merge to Dev
+
+on:
+  push:
+    branches:
+      - feature/*
+      - bugfix/*
+      - hotfix/*
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Jalankan Tes
+    - name: Run Tests
+      run: |
+        # Ganti dengan perintah tes Anda (contoh: composer test atau npm run test)
+        echo "Running tests..."
+        exit 0  # Return 0 jika sukses
+
+    # Merge ke branch dev
+    - name: Merge to Dev
+      if: success() # Merge hanya jika tes berhasil
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git checkout dev
+        git merge ${{ github.ref_name }} --no-ff -m "Auto-merge from ${{ github.ref_name }}"
+        git push origin dev
