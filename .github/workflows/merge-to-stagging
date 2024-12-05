@@ -1,0 +1,32 @@
+name: Merge to Stagging
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Jalankan Tes
+    - name: Run Tests
+      run: |
+        # Ganti dengan perintah tes Anda
+        echo "Running tests..."
+        exit 0  # Return 0 jika sukses
+
+    # Merge ke branch stagging
+    - name: Merge to Stagging
+      if: success() # Merge hanya jika tes berhasil
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git checkout stagging
+        git merge dev --no-ff -m "Auto-merge from dev"
+        git push origin stagging
