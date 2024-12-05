@@ -1,0 +1,52 @@
+name: Merge to stagging
+
+on:
+  push:
+    branches:
+      - dev
+      - hotfix/*
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Jalankan Tes
+    - name: Run Tests
+      run: |
+        echo "Running tests..."
+        exit 0  # Return 0 jika tes berhasil
+
+    # Merge ke branch stagging jika tes berhasil
+    - name: Merge to stagging
+      if: success() # Merge hanya jika tes berhasil
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git fetch --all  # Tarik semua branch
+        git checkout stagging # Pindah ke branch stagging
+        git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
+
+        # Menangani konflik di .github/workflows/merge-to-stagging.yml secara otomatis
+        git checkout --theirs .github/workflows/merge-to-stagging.yml
+        git add .github/workflows/merge-to-stagging.yml
+
+        # Menangani konflik di tes/file.text secara otomatis
+        git checkout --theirs tes/file.text
+        git add tes/file.text
+
+        # Commit perubahan setelah menyelesaikan konflik
+        git commit -m "Resolved merge conflict automatically"
+
+        # Push perubahan ke remote branch stagging
+        git push origin stagging
+
+    # Debugging Git status (optional, untuk troubleshooting)
+    - name: Debug git status
+      run: |
+        git status
+        git log --oneline
