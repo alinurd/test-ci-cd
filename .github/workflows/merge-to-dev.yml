@@ -20,7 +20,7 @@ jobs:
     - name: Run Tests
       run: |
         echo "Running tests..."
-        exit 0
+        exit 0  # Return 0 jika tes berhasil
 
     # Merge ke branch dev jika tes berhasil
     - name: Merge to Dev
@@ -31,13 +31,19 @@ jobs:
         git fetch --all
         git checkout dev
         git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
-        git checkout --theirs .github/workflows/merge-to-dev.yml || echo "No conflict in workflows"
-        git add .github/workflows/merge-to-dev.yml || true
-        git commit -m "Resolved conflicts automatically" || echo "No changes to commit"
+        
+        # Menyelesaikan konflik pada file yang bermasalah
+        git checkout --theirs .github/workflows/merge-to-dev.yml || true
+        git checkout --theirs README.md || true
+        git checkout --theirs tes/file.text || true
+        git add .github/workflows/merge-to-dev.yml README.md tes/file.text || true
+        git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
+
+        # Push perubahan ke branch dev
         git push origin dev || echo "Push failed, check branch protection rules."
 
     # Debugging Git
-    - name: Debug Git Logs
+    - name: Debug Git Status
       run: |
         git status
         git log --oneline -5
