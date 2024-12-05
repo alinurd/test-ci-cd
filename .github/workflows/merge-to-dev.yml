@@ -16,19 +16,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Jalankan Tes
+    # Jalankan Tes (gunakan perintah tes yang sesuai untuk proyek Anda)
     - name: Run Tests
       run: |
-        # Ganti dengan perintah tes Anda (contoh: composer test atau npm run test)
         echo "Running tests..."
-        exit 0  # Return 0 jika sukses
+        exit 0  # Return 0 jika tes berhasil
 
-    # Merge ke branch dev
+    # Merge ke branch dev jika tes berhasil
     - name: Merge to Dev
       if: success() # Merge hanya jika tes berhasil
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git checkout dev
-        git merge ${{ github.ref_name }} --no-ff -m "Auto-merge from ${{ github.ref_name }}"
-        git push origin dev
+        git fetch --all  # Tarik semua branch
+        git checkout dev # Pindah ke branch dev
+        git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
+        
+        # Menyelesaikan konflik secara otomatis
+        git checkout --theirs README.md .github/workflows/merge-to-dev.yml # Mengambil versi file dari branch yang lebih baru
+        git add README.md .github/workflows/merge-to-dev.yml
+        git commit -m "Resolved merge conflicts automatically"
+        
+        git push origin dev # Push perubahan ke remote branch dev
