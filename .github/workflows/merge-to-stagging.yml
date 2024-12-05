@@ -1,10 +1,9 @@
-name: Merge to Dev
+name: Merge to stagging
 
 on:
   push:
     branches:
-      - feature/*
-      - bugfix/*
+      - dev
       - hotfix/*
 
 jobs:
@@ -22,29 +21,29 @@ jobs:
         echo "Running tests..."
         exit 0  # Return 0 jika tes berhasil
 
-    # Merge ke branch dev jika tes berhasil
-    - name: Merge to Dev
+    # Merge ke branch stagging jika tes berhasil
+    - name: Merge to stagging
       if: success() # Merge hanya jika tes berhasil
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git fetch --all  # Tarik semua branch
-        git checkout dev # Pindah ke branch dev
+        git checkout stagging # Pindah ke branch stagging
         git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
 
-        # Menangani konflik di .github/workflows/merge-to-dev.yml secara otomatis
-        git checkout --theirs .github/workflows/merge-to-dev.yml
-        git add .github/workflows/merge-to-dev.yml
+        # Menangani konflik di .github/workflows/merge-to-stagging.yml secara otomatis
+        git checkout --theirs .github/workflows/merge-to-stagging.yml
+        git add .github/workflows/merge-to-stagging.yml
 
         # Menangani konflik di tes/file.text secara otomatis
         git checkout --theirs tes/file.text
         git add tes/file.text
 
         # Commit perubahan setelah menyelesaikan konflik
-        git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
+        git commit -m "Resolved merge conflict automatically"
 
-        # Push perubahan ke remote branch dev
-        git push origin dev || echo "Push completed with warnings"
+        # Push perubahan ke remote branch stagging
+        git push origin stagging
 
     # Debugging Git status (optional, untuk troubleshooting)
     - name: Debug git status
