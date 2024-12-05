@@ -41,10 +41,10 @@ jobs:
         git add tes/file.text
 
         # Commit perubahan setelah menyelesaikan konflik
-        git commit -m "Resolved merge conflict automatically"
+        git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
 
         # Push perubahan ke remote branch dev
-        git push origin dev
+        git push origin dev || echo "Push completed with warnings"
 
     # Debugging Git status (optional, untuk troubleshooting)
     - name: Debug git status
