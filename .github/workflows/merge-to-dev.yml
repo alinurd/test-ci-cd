@@ -16,7 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Jalankan Tes (gunakan perintah tes yang sesuai untuk proyek Anda)
+    # Jalankan Tes
     - name: Run Tests
       run: |
         echo "Running tests..."
@@ -30,11 +30,11 @@ jobs:
         git config user.email "actions@github.com"
         git fetch --all  # Tarik semua branch
         git checkout dev # Pindah ke branch dev
-        git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
-        
-        # Menyelesaikan konflik secara otomatis
-        git checkout --theirs README.md .github/workflows/merge-to-dev.yml # Mengambil versi file dari branch yang lebih baru
-        git add README.md .github/workflows/merge-to-dev.yml
-        git commit -m "Resolved merge conflicts automatically"
-        
+        git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" # Merge branch yang berubah ke dev
         git push origin dev # Push perubahan ke remote branch dev
+
+    # Debugging Git status (optional, untuk troubleshooting)
+    - name: Debug git status
+      run: |
+        git status
+        git log --oneline
