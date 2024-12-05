@@ -20,34 +20,24 @@ jobs:
     - name: Run Tests
       run: |
         echo "Running tests..."
-        exit 0  # Return 0 jika tes berhasil
+        exit 0
 
     # Merge ke branch dev jika tes berhasil
     - name: Merge to Dev
-      if: success() # Merge hanya jika tes berhasil
+      if: success()
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git fetch --all  # Tarik semua branch
-        git checkout dev # Pindah ke branch dev
+        git fetch --all
+        git checkout dev
         git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
+        git checkout --theirs .github/workflows/merge-to-dev.yml || echo "No conflict in workflows"
+        git add .github/workflows/merge-to-dev.yml || true
+        git commit -m "Resolved conflicts automatically" || echo "No changes to commit"
+        git push origin dev || echo "Push failed, check branch protection rules."
 
-        # Menangani konflik di .github/workflows/merge-to-dev.yml secara otomatis
-        git checkout --theirs .github/workflows/merge-to-dev.yml
-        git add .github/workflows/merge-to-dev.yml
-
-        # Menangani konflik di tes/file.text secara otomatis
-        git checkout --theirs tes/file.text
-        git add tes/file.text
-
-        # Commit perubahan setelah menyelesaikan konflik
-        git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
-
-        # Push perubahan ke remote branch dev
-        git push origin dev || echo "Push completed with warnings"
-
-    # Debugging Git status (optional, untuk troubleshooting)
-    - name: Debug git status
+    # Debugging Git
+    - name: Debug Git Logs
       run: |
         git status
-        git log --oneline
+        git log --oneline -5
