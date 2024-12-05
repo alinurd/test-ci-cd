@@ -32,10 +32,16 @@ jobs:
         git checkout dev # Pindah ke branch dev
         git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
 
-        # Menangani konflik secara otomatis dengan memilih versi terbaru dari branch yang di-merge (theirs)
+        # Menangani konflik di .github/workflows/merge-to-dev.yml secara otomatis
+        git checkout --theirs .github/workflows/merge-to-dev.yml
+        git add .github/workflows/merge-to-dev.yml
+
+        # Menangani konflik di tes/file.text secara otomatis
         git checkout --theirs tes/file.text
         git add tes/file.text
-        git commit -m "Resolved merge conflict automatically in tes/file.text"
+
+        # Commit perubahan setelah menyelesaikan konflik
+        git commit -m "Resolved merge conflict automatically"
 
         # Push perubahan ke remote branch dev
         git push origin dev
