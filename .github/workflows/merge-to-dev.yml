@@ -16,19 +16,30 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # Set up the environment (contoh untuk PHP dan Composer, sesuaikan dengan kebutuhan Anda)
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, curl
+
+    # Install dependencies (contoh untuk proyek PHP menggunakan Composer, sesuaikan jika Anda menggunakan Node.js, Python, dsb)
+    - name: Install dependencies
+      run: |
+        composer install --no-interaction
+
     # Jalankan Tes
     - name: Run Tests
       run: |
-        # Ganti dengan perintah tes Anda (contoh: composer test atau npm run test)
-        echo "Running tests..."
-        exit 0  # Return 0 jika sukses
-
-    # Merge ke branch dev
+        composer test  # Ganti dengan perintah tes Anda (misalnya, npm run test untuk proyek JS)
+      
+    # Merge ke branch dev jika tes berhasil
     - name: Merge to Dev
       if: success() # Merge hanya jika tes berhasil
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git checkout dev
-        git merge ${{ github.ref_name }} --no-ff -m "Auto-merge from ${{ github.ref_name }}"
-        git push origin dev
+        git fetch --all  # Tarik semua branch
+        git checkout dev # Pindah ke branch dev
+        git merge ${{ github.ref_name }} --no-ff -m "Auto-merge from ${{ github.ref_name }}" # Merge branch yang berubah ke dev
+        git push origin dev # Push perubahan ke remote branch dev
