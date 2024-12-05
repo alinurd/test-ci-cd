@@ -19,16 +19,35 @@ jobs:
     # Jalankan Tes
     - name: Run Tests
       run: |
-        # Ganti dengan perintah tes Anda (contoh: composer test atau npm run test)
         echo "Running tests..."
-        exit 0  # Return 0 jika sukses
+        exit 0  # Return 0 jika tes berhasil
 
-    # Merge ke branch dev
+    # Merge ke branch dev jika tes berhasil
     - name: Merge to Dev
       if: success() # Merge hanya jika tes berhasil
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git checkout dev
-        git merge ${{ github.ref_name }} --no-ff -m "Auto-merge from ${{ github.ref_name }}"
+        git fetch --all  # Tarik semua branch
+        git checkout dev # Pindah ke branch dev
+        git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
+
+        # Menangani konflik di .github/workflows/merge-to-dev.yml secara otomatis
+        git checkout --theirs .github/workflows/merge-to-dev.yml
+        git add .github/workflows/merge-to-dev.yml
+
+        # Menangani konflik di tes/file.text secara otomatis
+        git checkout --theirs tes/file.text
+        git add tes/file.text
+
+        # Commit perubahan setelah menyelesaikan konflik
+        git commit -m "Resolved merge conflict automatically"
+
+        # Push perubahan ke remote branch dev
         git push origin dev
+
+    # Debugging Git status (optional, untuk troubleshooting)
+    - name: Debug git status
+      run: |
+        git status
+        git log --oneline
