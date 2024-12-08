@@ -1,11 +1,15 @@
-name: Merge to stagging
+name: Merge to Dev
 
 on:
   push:
+   
     branches:
       - dev
       - hotfix/*
-
+ pull-request:
+  branches:
+    -dev
+    -
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -21,32 +25,28 @@ jobs:
         echo "Running tests..."
         exit 0  # Return 0 jika tes berhasil
 
-    # Merge ke branch stagging jika tes berhasil
-    - name: Merge to stagging
-      if: success() # Merge hanya jika tes berhasil
+    # Merge ke branch dev jika tes berhasil
+    - name: Merge to Stagging
+      if: success()
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git fetch --all  # Tarik semua branch
-        git checkout stagging # Pindah ke branch stagging
+        git fetch --all
+        git checkout dev
         git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
+        
+        # Menyelesaikan konflik pada file yang bermasalah
+        git checkout --theirs .github/workflows/merge-to-dev.yml || true
+        git checkout --theirs README.md || true
+        git checkout --theirs tes/file.text || true
+        git add .github/workflows/merge-to-dev.yml README.md tes/file.text || true
+        git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
 
-        # Menangani konflik di .github/workflows/merge-to-stagging.yml secara otomatis
-        git checkout --theirs .github/workflows/merge-to-stagging.yml
-        git add .github/workflows/merge-to-stagging.yml
+        # Push perubahan ke branch stagging
+        git push origin stagging || echo "Push failed, check branch protection rules."
 
-        # Menangani konflik di tes/file.text secara otomatis
-        git checkout --theirs tes/file.text
-        git add tes/file.text
-
-        # Commit perubahan setelah menyelesaikan konflik
-        git commit -m "Resolved merge conflict automatically"
-
-        # Push perubahan ke remote branch stagging
-        git push origin stagging
-
-    # Debugging Git status (optional, untuk troubleshooting)
-    - name: Debug git status
+    # Debugging Git
+    - name: Debug Git Status
       run: |
         git status
-        git log --oneline
+        git log --oneline -5
