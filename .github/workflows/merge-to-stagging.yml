@@ -1,52 +1,51 @@
-name: Merge to Dev
+name: Merge to Stagging
 
 on:
   push:
-   
     branches:
       - dev
       - hotfix/*
- pull-request:
-  branches:
-    -dev
-    -
+  pull_request:
+    branches:
+      - dev
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout repository
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Jalankan Tes
-    - name: Run Tests
-      run: |
-        echo "Running tests..."
-        exit 0  # Return 0 jika tes berhasil
+      # Jalankan Tes
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+          exit 0  # Return 0 jika tes berhasil
 
-    # Merge ke branch dev jika tes berhasil
-    - name: Merge to Stagging
-      if: success()
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git fetch --all
-        git checkout dev
-        git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
-        
-        # Menyelesaikan konflik pada file yang bermasalah
-        git checkout --theirs .github/workflows/merge-to-dev.yml || true
-        git checkout --theirs README.md || true
-        git checkout --theirs tes/file.text || true
-        git add .github/workflows/merge-to-dev.yml README.md tes/file.text || true
-        git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
+      # Merge ke branch stagging jika tes berhasil
+      - name: Merge to Stagging
+        if: success()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git fetch --all
+          git checkout stagging || git checkout -b stagging
+          git merge ${{ github.ref_name }} --no-ff --allow-unrelated-histories -m "Auto-merge from ${{ github.ref_name }}" || echo "Merge failed"
+          
+          # Menyelesaikan konflik pada file yang bermasalah
+          git checkout --theirs .github/workflows/merge-to-dev.yml || true
+          git checkout --theirs README.md || true
+          git checkout --theirs tes/file.text || true
+          git add .github/workflows/merge-to-dev.yml README.md tes/file.text || true
+          git commit -m "Resolved merge conflict automatically" || echo "No changes to commit"
 
-        # Push perubahan ke branch stagging
-        git push origin stagging || echo "Push failed, check branch protection rules."
+          # Push perubahan ke branch stagging
+          git push origin stagging || echo "Push failed, check branch protection rules."
 
-    # Debugging Git
-    - name: Debug Git Status
-      run: |
-        git status
-        git log --oneline -5
+      # Debugging Git
+      - name: Debug Git Status
+        run: |
+          git status
+          git log --oneline -5
